@@ -37,23 +37,36 @@ int main(int argc, char* argv[]) {
     error("ERROR on connect");
   }
 
-  printf("Welcome to online banking management system\n Please enter your login type\n0: admin\n1: normal\n2: joint\n");
-  int login;
+  printf("Welcome to online banking management system\nPlease enter your login type\n0: admin\n1: normal\n2: joint\n");
+  int login, result;
   scanf("%d", &login);
   write(sockfd, &login, sizeof(login));
+  char username[10], pin[4];
+  printf("Enter your login details\nUsername: \n");
+  scanf("%s\n",username);
+  write(sockfd, username, 10);
+  printf("Pin: \n");
+  scanf("%s\n",pin);
+  write(sockfd, pin, 4);
+  read(new_sock_fd, &result, sizeof(result));
   // 0: Admin, 1: normal, 2: joint
-  if(login == 0) {
-    int operation;
-    scanf("%d", &operation);
-    write(sockfd, &operation, sizeof(operation));
-  }
-  else if(login == 1 || login == 2) {
-    int operation;
-    scanf("%d", &operation);
-    write(sockfd, &operation, sizeof(operation));
+  if(result) {
+    if(login == 0) {
+      int operation;
+      scanf("%d", &operation);
+      write(sockfd, &operation, sizeof(operation));
+    }
+    else if(login == 1 || login == 2) {
+      int operation;
+      scanf("%d", &operation);
+      write(sockfd, &operation, sizeof(operation));
+    }
+    else {
+
+    }
   }
   else {
-
+    
   }
 
 

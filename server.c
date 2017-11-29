@@ -43,11 +43,26 @@ int main () {
     if(fork() == 0) {
       printf("In child process\n");
       int login; // 0: Admin, 1: normal, 2: joint
+      char username[10], pin[4];
       read(new_sock_fd, &login, sizeof(login));
+      read(new_sock_fd, username, 10);
+      read(new_sock_fd, pin, 4);
+      sem_t *sem;
       printf("%d\n", login);
-      if(login == 0) {
+      int result;
+      if(login == 0 || login == 1) {
+        sem = sem_open(username, IPC_CREAT, 0644, 1);
+        sem_wait(sem);
+        result = user_login(username, pin, login);
+        sem_post(sem);
+      }
+      else {
+        result = user_login(username, pin, login);
+      }
+      write(sockfd, &result, sizeof(result));
+      if(login == 0 && result) {
         int operation; // 0: add, 1: delete, 2: modify, 3: search;
-        read(new_sock_fd, &login, sizeof(login));
+        read(new_sock_fd, &operation, sizeof(login));
         if(operation == 0) {
 
         }
@@ -64,9 +79,9 @@ int main () {
 
         }
       }
-      else if(login == 1 || login == 2) {
+      else if((login == 1 || login == 2) && result) {
         int operation;
-        read(new_sock_fd, &login, sizeof(login));
+        read(new_sock_fd, &operation, sizeof(login));
         // Deposit
         if(operation == 0) {
 
