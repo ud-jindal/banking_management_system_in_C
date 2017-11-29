@@ -17,6 +17,7 @@ struct transaction{
     int id;
     int change;
     int balance;
+    bool isThere;
 };
 
 bool setLock(int fd,int type){
@@ -67,12 +68,41 @@ int addTransaction(int account,int change){
     a->change=change;
     a->id++;
     a->balance=a->balance+change;
+    a->isThere=true;
     lseek(fd,0,SEEK_END);
     write(fd,a,sizeof(struct transaction));
     unlock(fd);
     close(fd);
     ////initTransactionFile(a->id);
     return a->balance;
+}
+
+bool deleteTrans(int account,int id){
+    char filein[40];
+    sprintf(filein,"%d",account);
+    int fd=open(filein,O_RDWR,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,1);
+    struct transaction *a=malloc(sizeof(struct transaction));
+    int tot=getCountTransactions(account);
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct transaction)*id,SEEK_SET);
+    read(fd,a,sizeof(struct transaction));
+    if(a->isThere==1 && a->id==id){
+        a->isThere=false;
+        lseek(fd,-sizeof(struct transaction),SEEK_CUR);
+        write(fd,a,sizeof(struct transaction));
+        unlock(fd);
+        close(fd);
+        return true;
+    }
+    unlock(fd);
+    close(fd);
+    return 0;
 }
 
 bool initTransactions(int account){
@@ -84,6 +114,7 @@ bool initTransactions(int account){
     a->id=0;
     a->change=0;
     a->balance=0;
+    a->isThere=false;
     //a->accountNum=(int)NULL;
     write(fd,a,sizeof(struct transaction));
     close(fd);

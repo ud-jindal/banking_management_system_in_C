@@ -11,16 +11,40 @@
 #include <sys/resource.h>
 #include <signal.h>
 #include <math.h>
-#include "userDetailsHandler.h"
 #include "userIdHandler.h"
 
 //add
+int addNormalCustomer(char username[40], char password[40], char fname[40], char lname[40]){
+    int id=addUserId(username,password,fname,lname,0,0);
+    if(id==-1) return -1;
+}
 
+int addJointCustomer(char username[40], char password[40], char fname[40], char lname[40], int acnum){
+    int id=addUserId(username,password,fname,lname,1,acnum);
+    if(id==-1) return -1;
+}
 
 //delete
-
+bool delete(int id){
+    return deleteById(id);
+}
 
 //modify
+bool changeFname(int id,char new[40]){
+    return changefname(id,new);
+}
+
+bool changeLname(int id,char new[40]){
+    return changelname(id,new);
+}
+
+int resetPassword(int id){
+    return resetPass(id);
+}
+
+bool deleteTransaction(int account, int TransId){
+    return deleteTrans(account,TransId);
+}
 
 
 //retrieve

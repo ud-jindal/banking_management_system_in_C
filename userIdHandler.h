@@ -12,6 +12,7 @@
 #include <sys/resource.h>
 #include <signal.h>
 #include <math.h>
+#include "userDetailsHandler.h"
 
 struct data{
     int id;
@@ -72,7 +73,7 @@ int getId(char usr[40]){
     return -1;
 }
 
-int add(char usr[40]){
+int addUserId(char usr[40], char password[40], char fname[40], char lname[40], int type, int acnum){
     int fd=open("userId.bin",O_RDWR,0744),i;
     if(fd==-1) return -1;
     if(getId(usr)!=-1){
@@ -84,6 +85,20 @@ int add(char usr[40]){
     struct data *a=malloc(sizeof(struct data));
     int tot=getCount();
     a->id=tot+1;
+    if(type==0){
+        if(addNormal(a->id,fname,lname,password)==-1){
+            unlock(fd);
+            close(fd);
+            return -1;        
+        }
+    }
+    else{
+        if(addJoint(a->id,fname,lname,password,acnum)==-1){
+            unlock(fd);
+            close(fd);
+            return -1;        
+        }
+    }   
     strcpy(a->username,usr);
     a->isThere=true;
     lseek(fd,0,SEEK_END);
@@ -98,18 +113,21 @@ bool deleteById(int id){
     if(fd==-1) return 0;
     setLock(fd,1);
     struct data *a=malloc(sizeof(struct data));
-    lseek(fd,sizeof(struct data),SEEK_SET);
     int tot=getCount();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct data));
-        if(a->isThere==1 && a->id==id){
-            a->isThere=false;
-            lseek(fd,-sizeof(struct data),SEEK_CUR);
-            write(fd,a,sizeof(struct data));
-            unlock(fd);
-            close(fd);
-            return true;
-        }
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct data)*id,SEEK_SET);
+    read(fd,a,sizeof(struct data));
+    if(a->isThere==1 && a->id==id){
+        a->isThere=false;
+        lseek(fd,-sizeof(struct data),SEEK_CUR);
+        write(fd,a,sizeof(struct data));
+        unlock(fd);
+        close(fd);
+        return true;
     }
     unlock(fd);
     close(fd);
@@ -165,10 +183,10 @@ void printdata(){
 
 // int main(int argc, char *argv[]){
 //     if(!init()){
-//         if(add("user1")==-1) printf("error!\n");
-//         if(add("user2")==-1) printf("error!\n");
-//         if(add("user3")==-1) printf("error!\n");
-//         if(add("user2")==-1) printf("error!\n");
+//         if(addUserId("user1")==-1) printf("error!\n");
+//         if(addUserId("user2")==-1) printf("error!\n");
+//         if(addUserId("user3")==-1) printf("error!\n");
+//         if(addUserId("user2")==-1) printf("error!\n");
 //         deleteByUsr("user1");
 //         deleteByUsr("user1");
 //         deleteById(2);

@@ -126,22 +126,106 @@ bool changePassword(int id, char old[40], char new[40]){
     if(fd==-1) return 0;
     setLock(fd,1);
     struct user *a=malloc(sizeof(struct user));
-    lseek(fd,sizeof(struct user),SEEK_SET);
     int tot=getCountUser();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct user));
-        if(a->id==id && !strcmp(old,a->password)){
-            strcpy(a->password,new);
-            lseek(fd,-sizeof(struct user),SEEK_CUR);
-            write(fd,a,sizeof(struct user));
-            unlock(fd);
-            close(fd);
-            return true;
-        }
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id && !strcmp(old,a->password)){
+        strcpy(a->password,new);
+        lseek(fd,-sizeof(struct user),SEEK_CUR);
+        write(fd,a,sizeof(struct user));
+        unlock(fd);
+        close(fd);
+        return true;
     }
     unlock(fd);
     close(fd);
     return 0;
+}
+
+int resetPass(int id){
+    int fd=open(USERFILE,O_RDWR,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,1);
+    struct user *a=malloc(sizeof(struct user));
+    int tot=getCountUser();
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return -1;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id){
+        int newp=100000+(29*rand());
+        char newf[40];
+        sprintf(newf,"%d",newp);
+        strcpy(a->password,newf);
+        lseek(fd,-sizeof(struct user),SEEK_CUR);
+        write(fd,a,sizeof(struct user));
+        unlock(fd);
+        close(fd);
+        return newp;
+    }
+    unlock(fd);
+    close(fd);
+    return -1;
+}
+
+bool changefname(int id, char newf[40]){
+    int fd=open(USERFILE,O_RDWR,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,1);
+    struct user *a=malloc(sizeof(struct user));
+    int tot=getCountUser();
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id){
+        strcpy(a->fname,newf);
+        lseek(fd,-sizeof(struct user),SEEK_CUR);
+        write(fd,a,sizeof(struct user));
+        unlock(fd);
+        close(fd);
+        return true;
+    }
+    unlock(fd);
+    close(fd);
+    return false;
+}
+
+bool changelname(int id, char newf[40]){
+    int fd=open(USERFILE,O_RDWR,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,1);
+    struct user *a=malloc(sizeof(struct user));
+    int tot=getCountUser();
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id){
+        strcpy(a->lname,newf);
+        lseek(fd,-sizeof(struct user),SEEK_CUR);
+        write(fd,a,sizeof(struct user));
+        unlock(fd);
+        close(fd);
+        return true;
+    }
+    unlock(fd);
+    close(fd);
+    return false;
 }
 
 bool initUser(){
