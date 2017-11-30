@@ -22,6 +22,7 @@ struct user{
     int type; //0 for admin, 1 for normal, 2 for joint
     int accountNum;
     char password[40];
+    bool isThere;
 };
 
 // bool setLock(int fd,int type){
@@ -62,15 +63,18 @@ int getAccountNumber(int id){
     if(fd==-1) return -1;
     setLock(fd,0);
     struct user *a=malloc(sizeof(struct user));
-    lseek(fd,sizeof(struct user),SEEK_SET);
     int tot=getCountUser();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct user));
-        if(a->id==id){
-            unlock(fd);
-            close(fd);
-            return a->accountNum;
-        }
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id && a->isThere==1){
+        unlock(fd);
+        close(fd);
+        return a->accountNum;
     }
     unlock(fd);
     close(fd);
@@ -85,6 +89,7 @@ int addNormal(int id,char fname[40],char lname[40],char pass[40]){
     strcpy(a->fname,fname);
     strcpy(a->lname,lname);
     strcpy(a->password,pass);
+    a->isThere=1;
     a->type=1;
     a->id=id;
     //get new account number!
@@ -112,6 +117,7 @@ int addJoint(int id,char fname[40],char lname[40],char pass[40],int accountNum){
     strcpy(a->lname,lname);
     strcpy(a->password,pass);
     a->type=2;
+    a->isThere=1;
     a->id=id;
     a->accountNum=accountNum;
     lseek(fd,0,SEEK_END);
@@ -135,7 +141,7 @@ bool changePassword(int id, char old[40], char new[40]){
     }
     lseek(fd,sizeof(struct user)*id,SEEK_SET);
     read(fd,a,sizeof(struct user));
-    if(a->id==id && !strcmp(old,a->password)){
+    if(a->id==id && !strcmp(old,a->password) && a->isThere==1){
         strcpy(a->password,new);
         lseek(fd,-sizeof(struct user),SEEK_CUR);
         write(fd,a,sizeof(struct user));
@@ -148,7 +154,7 @@ bool changePassword(int id, char old[40], char new[40]){
     return 0;
 }
 
-bool verify(int id, char old[40], int type){
+bool deleteUser(int id){
     int fd=open(USERFILE,O_RDWR,0744),i;
     if(fd==-1) return 0;
     setLock(fd,1);
@@ -161,7 +167,33 @@ bool verify(int id, char old[40], int type){
     }
     lseek(fd,sizeof(struct user)*id,SEEK_SET);
     read(fd,a,sizeof(struct user));
-    if(a->id==id && !strcmp(old,a->password) && a->type==type){
+    if(a->id==id && a->isThere==1){
+        a->isThere=0;
+        lseek(fd,-sizeof(struct user),SEEK_CUR);
+        write(fd,a,sizeof(struct user));
+        unlock(fd);
+        close(fd);
+        return true;
+    }
+    unlock(fd);
+    close(fd);
+    return 0;
+}
+
+bool verify(int id, char old[40], int type){
+    int fd=open(USERFILE,O_RDONLY,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,0);
+    struct user *a=malloc(sizeof(struct user));
+    int tot=getCountUser();
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id && !strcmp(old,a->password) && a->type==type && a->isThere==1){
         unlock(fd);
         close(fd);
         return true;
@@ -184,7 +216,7 @@ int resetPass(int id){
     }
     lseek(fd,sizeof(struct user)*id,SEEK_SET);
     read(fd,a,sizeof(struct user));
-    if(a->id==id){
+    if(a->id==id && a->isThere==1){
         int newp=100000+(29*rand());
         char newf[40];
         sprintf(newf,"%d",newp);
@@ -261,6 +293,7 @@ bool initUser(){
     strcpy(a->lname,"admin");
     strcpy(a->password,"admin");
     a->type=0;
+    a->isThere=1;
     a->accountNum=0;
     if(!initAccounts()) return 0;
     write(fd,a,sizeof(struct user));
@@ -274,6 +307,7 @@ void printdataUser(){
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountUser();i++){
         read(fd,a,sizeof(struct user));
+        if(a->isThere)
         printf("%d %s %s %s %d %d\n",a->id,a->fname,a->lname,a->password,a->type,a->accountNum);
     }
     close(fd);
