@@ -53,8 +53,15 @@ int main(int argc, char* argv[]) {
   if(result) {
     if(login == 0) {
       int operation;
+      printf("Select operation you want to do\n0: add, 1: delete, 2: modify, 3: search");
       scanf("%d", &operation);
       write(sockfd, &operation, sizeof(operation));
+      if(operation == 0) {
+        int type;
+        printf("What type of user you want to add\n0: normal, 1: joint");
+        scanf("%d", &type);
+        write(sockfd, &type, sizeof(type));
+      }
     }
     else if(login == 1 || login == 2) {
       int operation;
@@ -66,7 +73,7 @@ int main(int argc, char* argv[]) {
     }
   }
   else {
-    
+
   }
 
 

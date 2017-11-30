@@ -62,8 +62,8 @@ int addTransaction(int account,int change){
     char filein[40];
     sprintf(filein,"%d",account);
     int fd=open(filein,O_RDWR,0744),i;
-    if(fd==-1) return -1;   
-    setLock(fd,1); 
+    if(fd==-1) return -1;
+    setLock(fd,1);
     struct transaction *a=malloc(sizeof(struct transaction));
     int tot=getCountTransactions(account);
     lseek(fd,-sizeof(struct transaction),SEEK_END);
