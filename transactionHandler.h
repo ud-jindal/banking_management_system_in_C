@@ -121,17 +121,21 @@ bool initTransactions(int account){
     return 1;
 }
 
-void printdataTransactions(int account){
+bool printdataTransactions(char* data,int account){
     char filein[40];
     sprintf(filein,"%d",account);
     int fd=open(filein,O_RDONLY,0744),i;
+    if(fd==-1) return false;
+    setLock(fd,0);
     struct transaction *a=malloc(sizeof(struct transaction));
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountTransactions(account);i++){
         read(fd,a,sizeof(struct transaction));
-        printf("%d %d %d\n",a->id,a->change,a->balance);
+        sprintf(data,"Transaction ID:%d Change:%d New Balance%d\n",a->id,a->change,a->balance);
     }
+    unlock(fd);
     close(fd);
+    return true;
 }
 
 // int main(int argc, char *argv[]){
