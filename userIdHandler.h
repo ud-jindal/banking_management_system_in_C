@@ -58,9 +58,9 @@ int getId(char usr[40]){
     if(fd==-1) return -1;
     setLock(fd,0);
     struct data *a=malloc(sizeof(struct data));
-    lseek(fd,sizeof(struct data),SEEK_SET);
+    //lseek(fd,sizeof(struct data),SEEK_SET);
     int tot=getCount();
-    for(i=0;i<tot;i++){
+    for(i=0;i<tot+1;i++){
         read(fd,a,sizeof(struct data));
         if(a->isThere==1 && !strcmp(a->username,usr)){
             unlock(fd);
