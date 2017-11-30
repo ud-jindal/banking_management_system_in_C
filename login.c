@@ -11,11 +11,17 @@
 #include <sys/resource.h>
 #include <signal.h>
 #include <math.h>
-#include "userDetailsHandler.h"
 #include "userIdHandler.h"
 
 //verify login
 
-int main(int argc, char *argv[]){
-    
+int verifyLogin(char username[40],char pass[40],int type){
+    int id=getId(username);
+    if(id==-1) return -1;
+    if(verify(id,pass,type)) return id;
+    else return -1;
 }
+
+// int main(int argc, char *argv[]){
+    
+// }

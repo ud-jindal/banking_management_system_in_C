@@ -105,6 +105,7 @@ int addNormal(int id,char fname[40],char lname[40],char pass[40]){
 int addJoint(int id,char fname[40],char lname[40],char pass[40],int accountNum){
     int fd=open(USERFILE,O_RDWR,0744),i;
     if(fd==-1) return -1;
+    if(!isThereAccount(accountNum)) return -1;
     setLock(fd,1); 
     struct user *a=malloc(sizeof(struct user));
     strcpy(a->fname,fname);
@@ -145,6 +146,29 @@ bool changePassword(int id, char old[40], char new[40]){
     unlock(fd);
     close(fd);
     return 0;
+}
+
+bool verify(int id, char old[40], int type){
+    int fd=open(USERFILE,O_RDWR,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,1);
+    struct user *a=malloc(sizeof(struct user));
+    int tot=getCountUser();
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return false;
+    }
+    lseek(fd,sizeof(struct user)*id,SEEK_SET);
+    read(fd,a,sizeof(struct user));
+    if(a->id==id && !strcmp(old,a->password) && a->type==type){
+        unlock(fd);
+        close(fd);
+        return true;
+    }
+    unlock(fd);
+    close(fd);
+    return false;
 }
 
 int resetPass(int id){
@@ -238,7 +262,7 @@ bool initUser(){
     strcpy(a->password,"admin");
     a->type=0;
     a->accountNum=0;
-    initAccounts();
+    if(!initAccounts()) return 0;
     write(fd,a,sizeof(struct user));
     close(fd);
     return 1;
@@ -250,7 +274,7 @@ void printdataUser(){
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountUser();i++){
         read(fd,a,sizeof(struct user));
-        printf("%d %s %s %s %d\n",a->id,a->fname,a->lname,a->password,a->type);
+        printf("%d %s %s %s %d %d\n",a->id,a->fname,a->lname,a->password,a->type,a->accountNum);
     }
     close(fd);
 }

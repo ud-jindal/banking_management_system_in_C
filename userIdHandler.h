@@ -164,12 +164,13 @@ bool init(){
     a->id=0;
     strcpy(a->username,"admin");
     a->isThere=true;
+    if(!initUser()) return 0;
     write(fd,a,sizeof(struct data));
     close(fd);
     return 1;
 }
 
-void printdata(){
+void printdataUserId(){
     int fd=open("userId.bin",O_RDONLY,0744),i;
     struct data *a=malloc(sizeof(struct data));
     lseek(fd,0,SEEK_SET);
