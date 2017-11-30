@@ -73,6 +73,26 @@ int getAccountBalance(int id){
     return -1;
 }
 
+bool isThereAccount(int id){
+    int fd=open(ACCOUNTSFILE,O_RDONLY,0744),i;
+    if(fd==-1) return 0;
+    setLock(fd,0);
+    struct account *a=malloc(sizeof(struct account));
+    lseek(fd,sizeof(struct account),SEEK_SET);
+    int tot=getCountAccounts();
+    for(i=0;i<tot;i++){
+        read(fd,a,sizeof(struct account));
+        if(a->id==id){
+            unlock(fd);
+            close(fd);
+            return 1;
+        }
+    }
+    unlock(fd);
+    close(fd);
+    return 0;
+}
+
 int addAccount(){
     int fd=open(ACCOUNTSFILE,O_RDWR,0744),i;
     if(fd==-1) return -1;   
@@ -94,29 +114,35 @@ int transact(int id,int change){
     if(fd==-1) return -1;
     setLock(fd,1);
     struct account *a=malloc(sizeof(struct account));
-    lseek(fd,sizeof(struct account),SEEK_SET);
     int tot=getCountAccounts();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct account));
-        if(a->id==id){
-            int newb=addTransaction(id,change);
-            if(newb==-1){
-                unlock(fd);
-                close(fd);
-                return -1;
-            }
-            a->balance=newb;
-            lseek(fd,-sizeof(struct account),SEEK_CUR);
-            write(fd,a,sizeof(struct account));
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+        return -1;
+    }
+    lseek(fd,sizeof(struct account)*id,SEEK_SET);
+    if(a->id==id){
+        if(a->balance+change<0){
             unlock(fd);
             close(fd);
-            return a->balance;
+            return -1;
         }
+        int newb=addTransaction(id,change);
+        if(newb==-1){
+            unlock(fd);
+            close(fd);
+            return -1;
+        }
+        a->balance=newb;
+        lseek(fd,-sizeof(struct account),SEEK_CUR);
+        write(fd,a,sizeof(struct account));
+        unlock(fd);
+        close(fd);
+        return a->balance;
     }
     unlock(fd);
     close(fd);
     return -1;
-    
 }
 
 bool initAccounts(){

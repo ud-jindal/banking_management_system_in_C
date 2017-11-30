@@ -58,9 +58,9 @@ int getId(char usr[40]){
     if(fd==-1) return -1;
     setLock(fd,0);
     struct data *a=malloc(sizeof(struct data));
-    lseek(fd,sizeof(struct data),SEEK_SET);
+    //lseek(fd,sizeof(struct data),SEEK_SET);
     int tot=getCount();
-    for(i=0;i<tot;i++){
+    for(i=0;i<tot+1;i++){
         read(fd,a,sizeof(struct data));
         if(a->isThere==1 && !strcmp(a->username,usr)){
             unlock(fd);
@@ -122,6 +122,11 @@ bool deleteById(int id){
     lseek(fd,sizeof(struct data)*id,SEEK_SET);
     read(fd,a,sizeof(struct data));
     if(a->isThere==1 && a->id==id){
+        if(!deleteUser(id)){
+            unlock(fd);
+            close(fd);
+            return 0;    
+        }
         a->isThere=false;
         lseek(fd,-sizeof(struct data),SEEK_CUR);
         write(fd,a,sizeof(struct data));
@@ -134,28 +139,28 @@ bool deleteById(int id){
     return 0;
 }
 
-bool deleteByUsr(char usr[40]){
-    int fd=open("userId.bin",O_RDWR,0744),i;
-    if(fd==-1) return 0;
-    setLock(fd,1);
-    struct data *a=malloc(sizeof(struct data));
-    lseek(fd,sizeof(struct data),SEEK_SET);
-    int tot=getCount();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct data));
-        if(a->isThere==1 && !strcmp(a->username,usr)){
-            a->isThere=false;
-            lseek(fd,-sizeof(struct data),SEEK_CUR);
-            write(fd,a,sizeof(struct data));
-            unlock(fd);
-            close(fd);
-            return true;
-        }
-    }
-    unlock(fd);
-    close(fd);
-    return 0;
-}
+// bool deleteByUsr(char usr[40]){
+//     int fd=open("userId.bin",O_RDWR,0744),i;
+//     if(fd==-1) return 0;
+//     setLock(fd,1);
+//     struct data *a=malloc(sizeof(struct data));
+//     lseek(fd,sizeof(struct data),SEEK_SET);
+//     int tot=getCount();
+//     for(i=0;i<tot;i++){
+//         read(fd,a,sizeof(struct data));
+//         if(a->isThere==1 && !strcmp(a->username,usr)){
+//             a->isThere=false;
+//             lseek(fd,-sizeof(struct data),SEEK_CUR);
+//             write(fd,a,sizeof(struct data));
+//             unlock(fd);
+//             close(fd);
+//             return true;
+//         }
+//     }
+//     unlock(fd);
+//     close(fd);
+//     return 0;
+// }
 
 bool init(){
     int fd=open("userId.bin",O_RDWR|O_CREAT|O_EXCL,0744);
@@ -164,12 +169,13 @@ bool init(){
     a->id=0;
     strcpy(a->username,"admin");
     a->isThere=true;
+    if(!initUser()) return 0;
     write(fd,a,sizeof(struct data));
     close(fd);
     return 1;
 }
 
-void printdata(){
+void printdataUserId(){
     int fd=open("userId.bin",O_RDONLY,0744),i;
     struct data *a=malloc(sizeof(struct data));
     lseek(fd,0,SEEK_SET);
