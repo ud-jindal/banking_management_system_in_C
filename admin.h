@@ -25,7 +25,7 @@ int addJointCustomer(char username[40], char password[40], char fname[40], char 
 }
 
 //delete
-bool delete(int id){
+bool delete_user(int id){
     return deleteById(id);
 }
 
@@ -46,9 +46,4 @@ bool deleteTransaction(int account, int TransId){
     return deleteTrans(account,TransId);
 }
 
-
 //retrieve
-
-int main(int argc, char *argv[]){
-    
-}

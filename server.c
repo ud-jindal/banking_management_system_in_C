@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include "admin.h"
 
 void error(char* msg) {
   perror(msg);
@@ -64,13 +65,25 @@ int main () {
         int operation; // 0: add, 1: delete, 2: modify, 3: search;
         read(new_sock_fd, &operation, sizeof(login));
         if(operation == 0) {
-
+          int type; // 0: joint, 1: normal
+          if(type == 0) {
+            addNormalCustomer(username, password, fname, lname);
+          }
+          else if(type == 1) {
+            addJointCustomer(username, password, fname, lname, acnum);
+          }
         }
         else if(operation == 1) {
-
+          delete_user(id);
         }
         else if(operation == 2) {
-
+          int type;
+          if(type == 0) {
+            changeFname(id, new);
+          }
+          else if(type == 1) {
+            changeLname(id, new);
+          }
         }
         else if(operation == 3) {
 
