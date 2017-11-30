@@ -178,16 +178,22 @@ bool init(){
     return 1;
 }
 
-void printdataUserId(){
+bool printdataUserId(char *buf){
     int fd=open("userId.bin",O_RDONLY,0744),i;
+    if(fd==-1) return false;
+    setLock(fd,0);
     struct data *a=malloc(sizeof(struct data));
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCount();i++){
+        char *tmp;
         read(fd,a,sizeof(struct data));
         if(a->isThere==1)
-        printf("%d %s %d\n",a->id,a->username,a->isThere);
+        printf(tmp,"Username:%d UserId:%s\n",a->id,a->username);
+        strcat(buf,tmp);
     }
+    unlock(fd);
     close(fd);
+    return true;
 }
 #endif
 

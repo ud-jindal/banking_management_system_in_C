@@ -49,7 +49,19 @@ bool deleteTransaction(int account, int TransId){
     return deleteTrans(account,TransId);
 }
 
-#endif
-
-
 //retrieve
+
+bool viewUsers(char *buf){
+    return printdataUser(buf);
+}
+
+bool viewAccounts(char *buf){
+    return printdataAccount(buf);
+}
+
+bool viewUserIds(char *buf){
+    return printdataUserId(buf);
+}
+
+
+#endif

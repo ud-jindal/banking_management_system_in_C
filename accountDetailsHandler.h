@@ -61,15 +61,17 @@ int getAccountBalance(int id){
     if(fd==-1) return -1;
     setLock(fd,0);
     struct account *a=malloc(sizeof(struct account));
-    lseek(fd,sizeof(struct account),SEEK_SET);
     int tot=getCountAccounts();
-    for(i=0;i<tot;i++){
-        read(fd,a,sizeof(struct account));
-        if(a->id==id){
-            unlock(fd);
-            close(fd);
-            return a->balance;
-        }
+    if(id>tot){
+        unlock(fd);
+        close(fd);
+    }
+    lseek(fd,sizeof(struct account)*id,SEEK_SET);
+    read(fd,a,sizeof(struct account));
+    if(a->id==id){
+        unlock(fd);
+        close(fd);
+        return a->balance;
     }
     unlock(fd);
     close(fd);
@@ -83,7 +85,7 @@ bool isThereAccount(int id){
     struct account *a=malloc(sizeof(struct account));
     //lseek(fd,sizeof(struct account),SEEK_SET);
     int tot=getCountAccounts();
-    for(i=0;i<tot;i++){
+    for(i=0;i<=tot;i++){
         read(fd,a,sizeof(struct account));
         if(a->id==id){
             unlock(fd);
@@ -162,15 +164,21 @@ bool initAccounts(){
     return 1;
 }
 
-void printdataAccount(){
+bool printdataAccount(char *buf){
     int fd=open(ACCOUNTSFILE,O_RDONLY,0744),i;
+    if(fd==-1) return false;
+    setLock(fd,0);
     struct account *a=malloc(sizeof(struct account));
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountAccounts();i++){
+        char *tmp;
         read(fd,a,sizeof(struct account));
-        printf("%d %d\n",a->id,a->balance);
+        sprintf(tmp,"Account Id:%d Balance:%d\n",a->id,a->balance);
+        strcat(buf,tmp);
     }
+    unlock(fd);
     close(fd);
+    return true;
 }
 #endif
 

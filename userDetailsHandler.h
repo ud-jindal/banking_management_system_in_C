@@ -304,16 +304,23 @@ bool initUser(){
     return 1;
 }
 
-void printdataUser(){
+bool printdataUser(char *buf){
     int fd=open(USERFILE,O_RDONLY,0744),i;
+    if(fd==-1) return false;
+    setLock(fd,0);
     struct user *a=malloc(sizeof(struct user));
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountUser();i++){
         read(fd,a,sizeof(struct user));
-        if(a->isThere)
-        printf("%d %s %s %s %d %d %d\n",a->id,a->fname,a->lname,a->password,a->type,a->accountNum,a->isThere);
+        if(a->isThere){
+            char *tmp;
+            sprintf(tmp,"User Id:%d Fname:%s Lname:%s User Type:%d Account Number:%d\n",a->id,a->fname,a->lname,a->type,a->accountNum);
+            strcat(buf,tmp);
+        }
     }
+    unlock(fd);
     close(fd);
+    return true;
 }
 
 #endif
