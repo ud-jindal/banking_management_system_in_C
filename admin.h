@@ -1,3 +1,6 @@
+#ifndef ADMIN_H
+#define ADMIN_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +48,8 @@ int resetPassword(int id){
 bool deleteTransaction(int account, int TransId){
     return deleteTrans(account,TransId);
 }
+
+#endif
 
 
 //retrieve

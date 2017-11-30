@@ -1,3 +1,6 @@
+#ifndef USERIDHANDLER_H
+#define USERIDHANDLER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -186,6 +189,7 @@ void printdataUserId(){
     }
     close(fd);
 }
+#endif
 
 // int main(int argc, char *argv[]){
 //     if(!init()){

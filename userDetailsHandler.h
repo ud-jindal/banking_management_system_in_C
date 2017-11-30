@@ -1,3 +1,6 @@
+#ifndef USERDETAILSHANDLER_H
+#define USERDETAILSHANDLER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -312,6 +315,8 @@ void printdataUser(){
     }
     close(fd);
 }
+
+#endif
 
 //  int main(int argc, char *argv[]){
 //     if(!initUser()){

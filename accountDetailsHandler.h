@@ -1,3 +1,6 @@
+#ifndef ACCOUNTDETAILSHANDLER_H
+#define ACCOUNTDETAILSHANDLER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,7 +81,7 @@ bool isThereAccount(int id){
     if(fd==-1) return 0;
     setLock(fd,0);
     struct account *a=malloc(sizeof(struct account));
-    lseek(fd,sizeof(struct account),SEEK_SET);
+    //lseek(fd,sizeof(struct account),SEEK_SET);
     int tot=getCountAccounts();
     for(i=0;i<tot;i++){
         read(fd,a,sizeof(struct account));
@@ -111,27 +114,28 @@ int addAccount(){
 
 int transact(int id,int change){    
     int fd=open(ACCOUNTSFILE,O_RDWR,0744),i;
-    if(fd==-1) return -1;
+    if(fd==-1) return -2;
     setLock(fd,1);
     struct account *a=malloc(sizeof(struct account));
     int tot=getCountAccounts();
     if(id>tot){
         unlock(fd);
         close(fd);
-        return -1;
+        return -3;
     }
     lseek(fd,sizeof(struct account)*id,SEEK_SET);
+    read(fd,a,sizeof(struct account));
     if(a->id==id){
         if(a->balance+change<0){
             unlock(fd);
             close(fd);
-            return -1;
+            return -4;
         }
         int newb=addTransaction(id,change);
         if(newb==-1){
             unlock(fd);
             close(fd);
-            return -1;
+            return -5;
         }
         a->balance=newb;
         lseek(fd,-sizeof(struct account),SEEK_CUR);
@@ -142,7 +146,7 @@ int transact(int id,int change){
     }
     unlock(fd);
     close(fd);
-    return -1;
+    return a->balance;
 }
 
 bool initAccounts(){
@@ -168,6 +172,7 @@ void printdataAccount(){
     }
     close(fd);
 }
+#endif
 
 // int main(int argc, char *argv[]){
 //     if(!initAccounts()){

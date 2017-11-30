@@ -1,3 +1,6 @@
+#ifndef TRANSACTIONHANDLER_H
+#define TRANSACTIONHANDLER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,7 +117,7 @@ bool initTransactions(int account){
     a->id=0;
     a->change=0;
     a->balance=0;
-    a->isThere=false;
+    a->isThere=true;
     //a->accountNum=(int)NULL;
     write(fd,a,sizeof(struct transaction));
     close(fd);
@@ -130,13 +133,19 @@ bool printdataTransactions(char* data,int account){
     struct transaction *a=malloc(sizeof(struct transaction));
     lseek(fd,0,SEEK_SET);
     for(i=0;i<=getCountTransactions(account);i++){
+        char *temp;
         read(fd,a,sizeof(struct transaction));
-        sprintf(data,"Transaction ID:%d Change:%d New Balance%d\n",a->id,a->change,a->balance);
+        if(a->isThere==1){
+            sprintf(temp,"Transaction ID:%d Change:%d New Balance:%d\n",a->id,a->change,a->balance);
+            strcat(data,temp);
+        }
     }
     unlock(fd);
     close(fd);
     return true;
 }
+
+#endif
 
 // int main(int argc, char *argv[]){
 //     if(!initTransactions(0)){

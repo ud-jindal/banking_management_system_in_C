@@ -1,3 +1,6 @@
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,10 +40,23 @@ bool changeUserPassword(int id,char old[40],char new[40]){
 //viewtransactiondetails(pass the buffer in the arguments)
 bool viewTransactionDetails(int userId,char *buf){
     int accId=getAccountNumber(userId);
-    if(accId==-1) return -1;
+    if(accId==-1) return false;
     return printdataTransactions(buf,accId);
 }
 
-int main(int argc, char *argv[]){
-    
-}
+#endif
+
+// int main(int argc, char *argv[]){
+//     char a[1000]="";
+//     printdataUserId();
+//     printdataUser();
+//     printdataAccount();
+//     //printf("%d\n",moneyTransaction(2,50));
+//     // moneyTransaction(2,20);
+//     // moneyTransaction(2,-60);
+//     changeUserPassword(8,"user2","user3");
+//     changeUserPassword(2,"user2","user4");
+//     int bal=checkBalance(2);
+//     printf("%d\n",bal);
+//     if(viewTransactionDetails(2,a)) printf("%s",a);
+// }
