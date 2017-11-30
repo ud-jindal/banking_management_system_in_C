@@ -308,7 +308,7 @@ void printdataUser(){
     for(i=0;i<=getCountUser();i++){
         read(fd,a,sizeof(struct user));
         if(a->isThere)
-        printf("%d %s %s %s %d %d\n",a->id,a->fname,a->lname,a->password,a->type,a->accountNum);
+        printf("%d %s %s %s %d %d %d\n",a->id,a->fname,a->lname,a->password,a->type,a->accountNum,a->isThere);
     }
     close(fd);
 }
