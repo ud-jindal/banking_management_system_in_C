@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
         if(type == 1) {
           printf("\naccount_no: ");
           scanf("%d", &account_no);
-          write(sockfd, account_no, sizeof(account_no));
+          write(sockfd, &account_no, sizeof(account_no));
           read(new_sock_fd, &result, sizeof(result));
         }
         else if(type == 2) {
@@ -90,6 +90,25 @@ int main(int argc, char* argv[]) {
           printf("Error while adding account");
           return 0;
         }
+      }
+      else if(operation == 1) {
+        printf("Enter account number you want delete\n");
+        scanf("%d", &account_no);
+        write(sockfd, &account_no, sizeof(account_no));
+        read(new_sock_fd, &result, sizeof(result));
+        if(result > 0) {
+          printf("account deleted successfully");
+        }
+        else {
+          printf("Error while deleting account");
+          return 0;
+        }
+      }
+      else if(operation == 2) {
+
+      }
+      else if(operation == 3) {
+
       }
     }
     else if(login == 1 || login == 2) {

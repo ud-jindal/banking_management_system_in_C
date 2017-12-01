@@ -84,7 +84,9 @@ int main () {
           }
         }
         else if(operation == 1) {
-          //delete_user(id);
+          read(sockfd, &account_no, sizeof(account_no));
+          result = delete_user(id);
+          write(sockfd, &result, sizeof(result));
         }
         else if(operation == 2) {
           int type;
