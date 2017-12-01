@@ -112,9 +112,41 @@ int main(int argc, char* argv[]) {
       }
     }
     else if(login == 1 || login == 2) {
-      int operation;
+      int operation, amount;
+      printf("Select operation you want to do\n0: deposit, 1: withraw, 2: balance enquiry, 3: change password, 4: view details, 5: exit");
       scanf("%d", &operation);
       write(sockfd, &operation, sizeof(operation));
+      if(operation == 0) {
+        printf("\nEnter amount you want to deposit: ");
+        scanf("%d", &amount);
+        write(sockfd, &amount, sizeof(amount));
+      }
+      else if(operation == 1) {
+        printf("\nEnter amount you want to withraw: ");
+        scanf("%d", &amount);
+        write(sockfd, &amount, sizeof(amount));
+      }
+      else if(operation == 2) {
+        read(sockfd, &amount, sizeof(amount));
+        printf("your account balance is: %d\n", amount);
+      }
+      else if(operation == 3) {
+        char old[4], new[4];
+        printf("\nEnter your old password: ");
+        scanf("%s", old);
+        write(sockfd, old, sizeof(old));
+        printf("\nEnter your new password: ");
+        scanf("%s", old);
+        write(sockfd, new, sizeof(new));
+      }
+      else if(operation == 4) {
+        char buf[400];
+        read(sockfd, buf, sizeof(buf));
+        printf("Your moneyTransaction history\n %s\n", buf);
+      }
+      else if(operation == 5) {
+        return 0;
+      }
     }
     else {
 

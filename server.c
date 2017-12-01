@@ -11,6 +11,7 @@
 #include <semaphore.h>
 #include "admin.h"
 #include "login.h"
+##include "customer.h"
 
 void error(char* msg) {
   perror(msg);
@@ -52,18 +53,18 @@ int main () {
       read(new_sock_fd, pin, 4);
       sem_t *sem;
       printf("%d\n", login);
-      int result;
+      int result, user_id;
       if(login == 0 || login == 1) {
         sem = sem_open(username, IPC_CREAT, 0644, 1);
         sem_wait(sem);
-        result = verifyLogin(username, pin, login);
+        user_id = verifyLogin(username, pin, login);
         sem_post(sem);
       }
       else {
-        result = verifyLogin(username, pin, login);
+        user_id = verifyLogin(username, pin, login);
       }
-      write(sockfd, &result, sizeof(result));
-      if(login == 0 && result >= 0) {
+      write(sockfd, &user_id, sizeof(user_id));
+      if(login == 0 && user_id >= 0) {
         int operation; // 0: add, 1: delete, 2: modify, 3: search;
         read(new_sock_fd, &operation, sizeof(login));
 
@@ -85,7 +86,7 @@ int main () {
         }
         else if(operation == 1) {
           read(sockfd, &account_no, sizeof(account_no));
-          result = delete_user(id);
+          result = delete_user(user_id);
           write(sockfd, &result, sizeof(result));
         }
         else if(operation == 2) {
@@ -104,32 +105,36 @@ int main () {
 
         }
       }
-      else if((login == 1 || login == 2) && result) {
-        int operation;
+      else if((login == 1 || login == 2) && user_id >= 0) {
+        int operation, amount;
         read(new_sock_fd, &operation, sizeof(login));
         // Deposit
         if(operation == 0) {
-
+          read(sockfd, &amount, sizeof(amount));
+          moneyTransaction(user_id, amount);
         }
         // Withdraw
         else if(operation == 1) {
-
+          read(sockfd, &amount, sizeof(amount));
+          moneyTransaction(user_id, -amount);
         }
         // Balance Enquiry
         else if(operation == 2) {
-
+          amount = checkBalance(user_id);
+          write(sockfd, &amount, sizeof(amount));
         }
         // Password Change
         else if(operation == 3) {
-
+          char old[4], new[4];
+          read(sockfd, old, sizeof(old));
+          read(sockfd, new, sizeof(new));
+          changeUserPassword(user_id, old, new);
         }
         // View details
         else if(operation == 4) {
-
-        }
-        // Exit
-        else if(operation == 5) {
-
+          char buf[400];
+          viewTransactionDetails(user_id, *buf);
+          write(sockfd, buf, sizeof(buf));
         }
       }
       else {
