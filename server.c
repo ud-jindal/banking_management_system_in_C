@@ -8,7 +8,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
+#include <semaphore.h>
 #include "admin.h"
+#include "login.h"
 
 void error(char* msg) {
   perror(msg);
@@ -40,11 +42,11 @@ int main () {
     listen(sockfd, 10);
     int addrlen = sizeof(client_add);
     new_sock_fd = accept(sockfd, (struct sockaddr *) &client_add, (socklen_t*)&addrlen);
-    printf("---------------\n" );
+    //printf("---------------\n" );
     if(fork() == 0) {
       printf("In child process\n");
-      int login; // 0: Admin, 1: normal, 2: joint
-      char username[10], pin[4];
+      int login, account_no; // 0: Admin, 1: normal, 2: joint
+      char username[10], pin[4], fname[10], lname[10];
       read(new_sock_fd, &login, sizeof(login));
       read(new_sock_fd, username, 10);
       read(new_sock_fd, pin, 4);
@@ -54,35 +56,43 @@ int main () {
       if(login == 0 || login == 1) {
         sem = sem_open(username, IPC_CREAT, 0644, 1);
         sem_wait(sem);
-        result = user_login(username, pin, login);
+        result = verifyLogin(username, pin, login);
         sem_post(sem);
       }
       else {
-        result = user_login(username, pin, login);
+        result = verifyLogin(username, pin, login);
       }
       write(sockfd, &result, sizeof(result));
-      if(login == 0 && result) {
+      if(login == 0 && result >= 0) {
         int operation; // 0: add, 1: delete, 2: modify, 3: search;
         read(new_sock_fd, &operation, sizeof(login));
+
         if(operation == 0) {
           int type; // 0: joint, 1: normal
+          read(sockfd, username, sizeof(username));
+          read(sockfd, pin, sizeof(pin));
+          read(sockfd, fname, sizeof(fname));
+          read(sockfd, lname, sizeof(lname));
           if(type == 0) {
-            addNormalCustomer(username, password, fname, lname);
+            result = addNormalCustomer(username, pin, fname, lname);
+            write(sockfd, &result, sizeof(result));
           }
           else if(type == 1) {
-            addJointCustomer(username, password, fname, lname, acnum);
+            read(sockfd, &account_no, sizeof(account_no));
+            result = addJointCustomer(username, pin, fname, lname, account_no);
+            write(sockfd, &result, sizeof(result));
           }
         }
         else if(operation == 1) {
-          delete_user(id);
+          //delete_user(id);
         }
         else if(operation == 2) {
           int type;
           if(type == 0) {
-            changeFname(id, new);
+            //changeFname(id, new);
           }
           else if(type == 1) {
-            changeLname(id, new);
+            //changeLname(id, new);
           }
         }
         else if(operation == 3) {

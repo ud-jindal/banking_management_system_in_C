@@ -23,7 +23,7 @@ int verifyLogin(char username[40],char pass[40],int type){
     else return -1;
 }
 
- int main(int argc, char *argv[]){
+ /*int main(int argc, char *argv[]){
     // if(!init()){
     //     addNormalCustomer("user1","user1","user","1");
     //     addNormalCustomer("user2","user2","user","2");
@@ -45,5 +45,5 @@ int verifyLogin(char username[40],char pass[40],int type){
     printf("%d\n",verifyLogin("user6","user1",1));
     printf("%d\n",verifyLogin("user2","user2",2));
     printf("%d\n",verifyLogin("user2","user2",0));
-    printf("%d\n",verifyLogin("admin","admin",1));    
- }
+    printf("%d\n",verifyLogin("admin","admin",1));
+ }*/

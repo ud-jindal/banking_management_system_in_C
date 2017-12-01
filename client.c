@@ -38,10 +38,11 @@ int main(int argc, char* argv[]) {
   }
 
   printf("Welcome to online banking management system\nPlease enter your login type\n0: admin\n1: normal\n2: joint\n");
-  int login, result;
+  int login, result, account_no;
+  char username[10], pin[4], fname[10], lname[10];
   scanf("%d", &login);
   write(sockfd, &login, sizeof(login));
-  char username[10], pin[4];
+  //char username[10], pin[4];
   printf("Enter your login details\nUsername: \n");
   scanf("%s\n",username);
   write(sockfd, username, 10);
@@ -50,7 +51,7 @@ int main(int argc, char* argv[]) {
   write(sockfd, pin, 4);
   read(new_sock_fd, &result, sizeof(result));
   // 0: Admin, 1: normal, 2: joint
-  if(result) {
+  if(result >= 0) {
     if(login == 0) {
       int operation;
       printf("Select operation you want to do\n0: add, 1: delete, 2: modify, 3: search");
@@ -61,6 +62,34 @@ int main(int argc, char* argv[]) {
         printf("What type of user you want to add\n0: normal, 1: joint");
         scanf("%d", &type);
         write(sockfd, &type, sizeof(type));
+        printf("Enter details of user you want to add\nusername: ");
+        scanf("%s", username);
+        write(sockfd, username, sizeof(username));
+        printf("\npin: ");
+        scanf("%s", pin);
+        write(sockfd, pin, sizeof(pin));
+        printf("\nfirst_name: ");
+        scanf("%s", fname);
+        write(sockfd, fname, sizeof(fname));
+        printf("\nlast_name: ");
+        scanf("%s", lname);
+        write(sockfd, lname, sizeof(lname));
+        if(type == 1) {
+          printf("\naccount_no: ");
+          scanf("%d", &account_no);
+          write(sockfd, account_no, sizeof(account_no));
+          read(new_sock_fd, &result, sizeof(result));
+        }
+        else if(type == 2) {
+          read(new_sock_fd, &result, sizeof(result));
+        }
+        if(result > 0) {
+          printf("account added successfully");
+        }
+        else {
+          printf("Error while adding account");
+          return 0;
+        }
       }
     }
     else if(login == 1 || login == 2) {
